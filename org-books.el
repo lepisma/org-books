@@ -38,7 +38,7 @@
 (defcustom org-books-file nil
   "File for keeping reading list"
   :type 'string
-  :group org-books)
+  :group 'org-books)
 
 (defun org-books-create-file (file-path)
   "Write initialization stuff in a new file"
@@ -58,7 +58,7 @@
     (org-insert-heading)
     (insert title "\n")
     (org-set-property "AUTHOR" author)
-    (org-set-property "ADDED" (time-stamp-string "<%:y-%02m-%02d %02H:%02M>"))
+    (org-set-property "ADDED" (time-stamp-string "<%:y-%02m-%02d>"))
     (insert "\n")
     (append-to-file (point-min) (point-max) org-books-file)))
 
