@@ -29,7 +29,7 @@
 
 ;;; Code:
 
-(require 'emojify)
+(require 'org)
 
 (defgroup org-books nil
   "Org reading list management"
@@ -39,6 +39,37 @@
   "File for keeping reading list"
   :type 'string
   :group org-books)
+
+(defun org-books-create-file (file-path)
+  "Write initialization stuff in a new file"
+  (interactive "FFile: ")
+  (if (file-exists-p file-path)
+      (message "There is already a file present, skipping.")
+    (with-temp-file file-path
+      (insert "#+TITLE: Reading List\n"
+              "#+AUTHOR: " (replace-regexp-in-string "" " " user-full-name) "\n\n"
+              "#+TODO: READING NEXT | READ\n\n"))))
+
+(defun org-books-add-book (title author)
+  "Add a book to the org-books-file."
+  (interactive "sBook Title: \nsAuthor: ")
+  (with-temp-buffer
+    (org-mode)
+    (org-insert-heading)
+    (insert title "\n")
+    (org-set-property "AUTHOR" author)
+    (org-set-property "ADDED" (time-stamp-string "<%:y-%02m-%02d %02H:%02M>"))
+    (insert "\n")
+    (append-to-file (point-min) (point-max) org-books-file)))
+
+(defun org-books-finish-book (rating)
+  "Finish book at point."
+  (interactive "nRating (stars 1-5, 0 -> NA): ")
+  (org-todo "READ")
+  (if (> rating 0)
+      (org-set-property "RATING" (mapconcat 'identity
+                                            (loop for i to (- rating 1) collect ":star:")
+                                            ""))))
 
 (provide 'org-books)
 ;;; org-books.el ends here
