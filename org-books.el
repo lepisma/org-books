@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 Abhinav Tushar
 
 ;; Author: Abhinav Tushar <abhinav.tushar.vs@gmail.com>
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Package-Requires: ((emojify "0.4") (enlive "0.0.1") (s "1.11.0"))
 ;; URL: https://github.com/lepisma/org-books
 
@@ -54,13 +54,28 @@
               "#+TODO: READING NEXT | READ\n\n"))))
 
 ;;;###autoload
-(defun org-books-add-goodreads (gr-url)
-  "Add book from goodreads url"
-  (interactive "sGoodreads url: ")
-  (let ((page-node (enlive-fetch gr-url)))
-    (org-books-add-book (s-trim (enlive-text (enlive-get-element-by-id page-node "bookTitle")))
-                        (s-join ", " (mapcar #'enlive-text (enlive-get-elements-by-class-name page-node "authorName")))
-                        `(("GOODREADS" ,gr-url)))))
+(defun org-books-add-url (url)
+  "Add book from web url"
+  (interactive "sUrl: ")
+  (let ((details (cond ((s-contains? "amazon.com" url) (org-books-get-details-amazon url))
+                       ((s-contains? "goodreads.com" url) (org-books-get-details-goodreads url))
+                       (t (message "Url not recognized")))))
+    (if details
+        (apply #'org-books-add-book details))))
+
+(defun org-books-get-details-amazon (url)
+  "Get book details from amazon page"
+  (let ((page-node (enlive-fetch url)))
+    (list (enlive-text (enlive-get-element-by-id page-node "productTitle"))
+          (s-join ", " (mapcar #'enlive-text (enlive-get-elements-by-class-name page-node "contributorNameID")))
+          `(("AMAZON" . ,url)))))
+
+(defun org-books-get-details-goodreads (url)
+  "Get book details from goodreads page"
+  (let ((page-node (enlive-fetch url)))
+    (list (s-trim (enlive-text (enlive-get-element-by-id page-node "bookTitle")))
+          (s-join ", " (mapcar #'enlive-text (enlive-get-elements-by-class-name page-node "authorName")))
+          `(("GOODREADS" . ,url)))))
 
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
