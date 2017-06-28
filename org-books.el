@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 Abhinav Tushar
 
 ;; Author: Abhinav Tushar <abhinav.tushar.vs@gmail.com>
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Package-Requires: ((emojify "0.4") (enlive "0.0.1") (s "1.11.0"))
 ;; URL: https://github.com/lepisma/org-books
 
@@ -53,6 +53,7 @@
               "#+AUTHOR: " (replace-regexp-in-string "" " " user-full-name) "\n\n"
               "#+TODO: READING NEXT | READ\n\n"))))
 
+;;;###autoload
 (defun org-books-add-goodreads (gr-url)
   "Add book from goodreads url"
   (interactive "sGoodreads url: ")
@@ -61,6 +62,7 @@
                         (s-join ", " (mapcar #'enlive-text (enlive-get-elements-by-class-name page-node "authorName")))
                         `(("GOODREADS" ,gr-url)))))
 
+;;;###autoload
 (defun org-books-add-book (title author &optional props)
   "Add a book to the org-books-file. Optional add props"
   (interactive "sBook Title: \nsAuthor: ")
@@ -76,6 +78,7 @@
         (append-to-file (point-min) (point-max) org-books-file))
     (message "org-books-file not set")))
 
+;;;###autoload
 (defun org-books-finish-book (rating)
   "Finish book at point."
   (interactive "nRating (stars 1-5, 0 -> NA): ")
