@@ -88,7 +88,7 @@
         (insert title "\n")
         (org-set-property "AUTHOR" author)
         (org-set-property "ADDED" (time-stamp-string "<%:y-%02m-%02d>"))
-        (mapc (lambda (p) (org-set-property (first p) (second p))) props)
+        (mapc (lambda (p) (org-set-property (car p) (cdr p))) props)
         (insert "\n")
         (append-to-file (point-min) (point-max) org-books-file))
     (message "org-books-file not set")))
