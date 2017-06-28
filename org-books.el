@@ -3,8 +3,8 @@
 ;; Copyright (C) 2017 Abhinav Tushar
 
 ;; Author: Abhinav Tushar <abhinav.tushar.vs@gmail.com>
-;; Version: 0.1.0
-;; Package-Requires: ((emojify "0.4"))
+;; Version: 0.1.1
+;; Package-Requires: ((emojify "0.4") (enlive "0.0.1") (s "1.11.0"))
 ;; URL: https://github.com/lepisma/org-books
 
 ;;; Commentary:
@@ -29,7 +29,10 @@
 
 ;;; Code:
 
+(require 'enlive)
 (require 'org)
+(require 's)
+
 
 (defgroup org-books nil
   "Org reading list management"
@@ -50,17 +53,28 @@
               "#+AUTHOR: " (replace-regexp-in-string "" " " user-full-name) "\n\n"
               "#+TODO: READING NEXT | READ\n\n"))))
 
-(defun org-books-add-book (title author)
-  "Add a book to the org-books-file."
+(defun org-books-add-goodreads (gr-url)
+  "Add book from goodreads url"
+  (interactive "sGoodreads url: ")
+  (let ((page-node (enlive-fetch gr-url)))
+    (org-books-add-book (s-trim (enlive-text (enlive-get-element-by-id page-node "bookTitle")))
+                        (s-join ", " (mapcar #'enlive-text (enlive-get-elements-by-class-name page-node "authorName")))
+                        `(("GOODREADS" ,gr-url)))))
+
+(defun org-books-add-book (title author &optional props)
+  "Add a book to the org-books-file. Optional add props"
   (interactive "sBook Title: \nsAuthor: ")
-  (with-temp-buffer
-    (org-mode)
-    (org-insert-heading)
-    (insert title "\n")
-    (org-set-property "AUTHOR" author)
-    (org-set-property "ADDED" (time-stamp-string "<%:y-%02m-%02d>"))
-    (insert "\n")
-    (append-to-file (point-min) (point-max) org-books-file)))
+  (if org-books-file
+      (with-temp-buffer
+        (org-mode)
+        (org-insert-heading)
+        (insert title "\n")
+        (org-set-property "AUTHOR" author)
+        (org-set-property "ADDED" (time-stamp-string "<%:y-%02m-%02d>"))
+        (mapc (lambda (p) (org-set-property (first p) (second p))) props)
+        (insert "\n")
+        (append-to-file (point-min) (point-max) org-books-file))
+    (message "org-books-file not set")))
 
 (defun org-books-finish-book (rating)
   "Finish book at point."
