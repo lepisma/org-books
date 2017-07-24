@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 Abhinav Tushar
 
 ;; Author: Abhinav Tushar <abhinav.tushar.vs@gmail.com>
-;; Version: 0.1.3
+;; Version: 0.1.4
 ;; Package-Requires: ((emojify "0.4") (enlive "0.0.1") (s "1.11.0"))
 ;; URL: https://github.com/lepisma/org-books
 
@@ -43,6 +43,9 @@
   :type 'string
   :group 'org-books)
 
+(defun -org-books-clean-str (text)
+  (s-trim (s-collapse-whitespace text)))
+
 (defun org-books-create-file (file-path)
   "Write initialization stuff in a new file"
   (interactive "FFile: ")
@@ -60,21 +63,22 @@
   (let ((details (cond ((s-contains? "amazon.com" url) (org-books-get-details-amazon url))
                        ((s-contains? "goodreads.com" url) (org-books-get-details-goodreads url))
                        (t (message "Url not recognized")))))
-    (if details
-        (apply #'org-books-add-book details))))
+    (if (string-equal (first details) "")
+        (message "Error in fetching url. Please retry.")
+      (apply #'org-books-add-book details))))
 
 (defun org-books-get-details-amazon (url)
   "Get book details from amazon page"
   (let ((page-node (enlive-fetch url)))
-    (list (enlive-text (enlive-get-element-by-id page-node "productTitle"))
-          (s-join ", " (mapcar #'enlive-text (enlive-get-elements-by-class-name page-node "contributorNameID")))
+    (list (-org-books-clean-str (enlive-text (enlive-get-element-by-id page-node "productTitle")))
+          (-org-books-clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author > a]))))
           `(("AMAZON" . ,url)))))
 
 (defun org-books-get-details-goodreads (url)
   "Get book details from goodreads page"
   (let ((page-node (enlive-fetch url)))
-    (list (s-trim (s-collapse-whitespace (enlive-text (enlive-get-element-by-id page-node "bookTitle"))))
-          (s-join ", " (mapcar #'enlive-text (enlive-get-elements-by-class-name page-node "authorName")))
+    (list (-org-books-clean-str (enlive-text (enlive-get-element-by-id page-node "bookTitle")))
+          (-org-books-clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.authorName > span]))))
           `(("GOODREADS" . ,url)))))
 
 ;;;###autoload
