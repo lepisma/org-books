@@ -73,7 +73,7 @@
 (defun org-books-get-details-goodreads (url)
   "Get book details from goodreads page"
   (let ((page-node (enlive-fetch url)))
-    (list (s-trim (enlive-text (enlive-get-element-by-id page-node "bookTitle")))
+    (list (s-trim (s-collapse-whitespace (enlive-text (enlive-get-element-by-id page-node "bookTitle"))))
           (s-join ", " (mapcar #'enlive-text (enlive-get-elements-by-class-name page-node "authorName")))
           `(("GOODREADS" . ,url)))))
 
