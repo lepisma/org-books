@@ -98,10 +98,9 @@
     (message "org-books-file not set")))
 
 ;;;###autoload
-(defun org-books-finish-book (rating)
-  "Finish book at point."
-  (interactive "nRating (stars 1-5, 0 -> NA): ")
-  (org-todo "READ")
+(defun org-books-rate-book (position rating)
+  "Add rating to book at given position."
+  (interactive "d\nnRating (stars 1-5): ")
   (if (> rating 0)
       (org-set-property "RATING" (s-join "" (loop for i to (- rating 1) collect ":star:")))))
 
