@@ -9,5 +9,4 @@ Reading list management using org-mode
 - To add books manually, use ~org-books-add-book~ function. To add from
   goodreads/amazon url, call ~org-books-add-url~.
 
-- Finish a book and give ratings, go to the entry and call
-  ~org-books-finish-book~.
+- To give ratings, go to the entry and call ~org-books-rate-book~.
