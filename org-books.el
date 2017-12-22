@@ -3,8 +3,8 @@
 ;; Copyright (C) 2017 Abhinav Tushar
 
 ;; Author: Abhinav Tushar <abhinav.tushar.vs@gmail.com>
-;; Version: 0.1.4
-;; Package-Requires: ((emojify "0.4") (enlive "0.0.1") (s "1.11.0"))
+;; Version: 0.1.5
+;; Package-Requires: ((enlive "0.0.1") (s "1.11.0"))
 ;; URL: https://github.com/lepisma/org-books
 
 ;;; Commentary:
@@ -55,6 +55,13 @@
       (insert "#+TITLE: Reading List\n"
               "#+AUTHOR: " (replace-regexp-in-string "" " " user-full-name) "\n\n"
               "#+TODO: READING NEXT | READ\n\n"))))
+
+;;;###autoload
+(defun org-books-cliplink ()
+  "Clip link from clipboard"
+  (interactive)
+  (let ((url (substring-no-properties (current-kill 0))))
+    (org-books-add-url url)))
 
 ;;;###autoload
 (defun org-books-add-url (url)
