@@ -95,7 +95,7 @@
   (if org-books-file
       (with-temp-buffer
         (org-mode)
-        (org-insert-heading)
+        (org-insert-heading nil nil t)
         (insert title "\n")
         (org-set-property "AUTHOR" author)
         (org-set-property "ADDED" (time-stamp-string "<%:y-%02m-%02d>"))
