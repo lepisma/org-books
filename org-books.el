@@ -102,6 +102,7 @@
         (mapc (lambda (p) (org-set-property (car p) (cdr p))) props)
         (insert "\n")
         (append-to-file (point-min) (point-max) org-books-file))
+            (org-set-property "ADDED" (format-time-string "<%Y-%02m-%02d>"))
     (message "org-books-file not set")))
 
 ;;;###autoload
