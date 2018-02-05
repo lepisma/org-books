@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 Abhinav Tushar
 
 ;; Author: Abhinav Tushar <abhinav.tushar.vs@gmail.com>
-;; Version: 0.1.5
+;; Version: 0.1.6
 ;; Package-Requires: ((enlive "0.0.1") (s "1.11.0"))
 ;; URL: https://github.com/lepisma/org-books
 
@@ -41,6 +41,11 @@
 (defcustom org-books-file nil
   "File for keeping reading list"
   :type 'string
+  :group 'org-books)
+
+(defcustom org-books-add-to-top t
+  "Should add new books at the top?"
+  :type 'boolean
   :group 'org-books)
 
 (defun -org-books-clean-str (text)
@@ -93,16 +98,20 @@
   "Add a book to the org-books-file. Optional add props"
   (interactive "sBook Title: \nsAuthor: ")
   (if org-books-file
-      (with-temp-buffer
-        (org-mode)
-        (org-insert-heading nil nil t)
-        (insert title "\n")
-        (org-set-property "AUTHOR" author)
-        (org-set-property "ADDED" (time-stamp-string "<%:y-%02m-%02d>"))
-        (mapc (lambda (p) (org-set-property (car p) (cdr p))) props)
-        (insert "\n")
-        (append-to-file (point-min) (point-max) org-books-file))
+      (save-excursion
+        (let ((buffer (find-file-noselect org-books-file)))
+          (with-current-buffer buffer
+            (if (and org-books-add-to-top
+                     (progn (goto-char (point-min))
+                            (search-forward "*" nil t)))
+                (previous-line)
+              (goto-char (point-max)))
+            (org-insert-heading nil nil t)
+            (insert title "\n")
+            (org-set-property "AUTHOR" author)
             (org-set-property "ADDED" (format-time-string "<%Y-%02m-%02d>"))
+            (mapc (lambda (p) (org-set-property (car p) (cdr p))) props)
+            (save-buffer))))
     (message "org-books-file not set")))
 
 ;;;###autoload
