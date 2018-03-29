@@ -1,8 +1,7 @@
 #+TITLE: org-books
 #+AUTHOR: Abhinav Tushar
 
-#+MACRO: badge @@html:<a href="$1" class="image-link"><img src="$2" /></a>@@
-{{{badge(https://travis-ci.org/lepisma/org-books,https://img.shields.io/travis/lepisma/org-books/master.svg?style=for-the-badge)}}}
+[[https://travis-ci.org/lepisma/org-books][https://img.shields.io/travis/lepisma/org-books/master.svg?style=for-the-badge]]
 
 Reading list management using org-mode
 
