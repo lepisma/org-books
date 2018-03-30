@@ -10,7 +10,6 @@ matrix:
     - env: EMACS_VERSION=snapshot
 env:
   - EMACS_VERSION=25.3
-  - EMACS_VERSION=26.0.91 PRETEST=yes
   - EMACS_VERSION=snapshot
 before_install:
   # Configure $PATH: Executables are installed to $HOME/bin
