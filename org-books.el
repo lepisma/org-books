@@ -53,7 +53,7 @@
 
 (defcustom org-books-file-depth 2
   "The max depth for adding book under headings"
-  :type 'string
+  :type 'integer
   :group 'org-books)
 
 (defun org-books-create-file (file-path)
