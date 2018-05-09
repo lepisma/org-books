@@ -32,6 +32,14 @@
 (defun org-books-get-details--clean-str (text)
   (s-trim (s-collapse-whitespace text)))
 
+(defun org-books-get-details-amazon-p (url)
+  "Tell if the url is an amazon url"
+  (s-contains? "amazon.com" url))
+
+(defun org-books-get-details-goodreads-p (url)
+  "Tell if the url is for a goodreads page"
+  (s-contains? "goodreads.com" url))
+
 (defun org-books-get-details-amazon (url)
   "Get book details from amazon page"
   (let ((page-node (enlive-fetch url)))

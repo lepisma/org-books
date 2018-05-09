@@ -77,8 +77,10 @@
 (defun org-books-add-url (url)
   "Add book from web url"
   (interactive "sUrl: ")
-  (let ((details (cond ((s-contains? "amazon.com" url) (org-books-get-details-amazon url))
-                       ((s-contains? "goodreads.com" url) (org-books-get-details-goodreads url))
+  (let ((details (cond ((org-books-get-details-amazon-p url)
+                        (org-books-get-details-amazon url))
+                       ((org-books-get-details-goodreads-p url)
+                        (org-books-get-details-goodreads url))
                        (t (message "Url not recognized")))))
     (if (string-equal (first details) "")
         (message "Error in fetching url. Please retry.")
