@@ -89,7 +89,7 @@
   (insert (make-string level ?*) " " title "\n")
   (org-set-property "AUTHOR" author)
   (org-set-property "ADDED" (format-time-string "<%Y-%02m-%02d>"))
-  (-each props (lambda (p) (funcall #'org-set-property (car p) (cdr p)))))
+  (-each props (lambda (p) (org-set-property (car p) (cdr p)))))
 
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
