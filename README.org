@@ -5,7 +5,7 @@
 
 Reading list management using org-mode
 
-[[file:./screen.webm]]
+[[file:./screen.gif]]
 
 - Set path to reading list ~(setq org-books-file "~/my-list.org")~. Create a new
   file using function ~org-books-create-file~.
