@@ -5,10 +5,19 @@
 
 Reading list management using org-mode
 
-- Set path to reading list ~(setq org-books-file "~/my-list.org")~. Or create a new
+[[file:./screen.webm]]
+
+- Set path to reading list ~(setq org-books-file "~/my-list.org")~. Create a new
   file using function ~org-books-create-file~.
 
 - To add books manually, use ~org-books-add-book~ function. To add from
-  goodreads/amazon url, call ~org-books-add-url~.
+  goodreads/amazon urls, call ~org-books-add-url~ or use ~org-books-cliplink~ if url
+  is in clipboard.
 
 - To give ratings, go to the entry and call ~org-books-rate-book~.
+
+- While filing a book, ~org-books-file-depth~ tells which headings are to be
+  considered as a category (like fiction or something).
+
+- ~org-books-add-to-top~ (default ~t~) tells whether to add the book at the top or
+  bottom under the selected heading.
