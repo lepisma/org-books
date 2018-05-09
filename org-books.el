@@ -84,10 +84,9 @@
         (message "Error in fetching url. Please retry.")
       (apply #'org-books-add-book details))))
 
-(defun org-books--insert (title author &optional props)
+(defun org-books--insert (level title author &optional props)
   "Insert book template at current position and buffer"
-  (org-insert-heading nil nil nil)
-  (insert title "\n")
+  (insert (make-string (or level 1) ?*) " " title "\n")
   (org-set-property "AUTHOR" author)
   (org-set-property "ADDED" (format-time-string "<%Y-%02m-%02d>"))
   (-each props (lambda (p) (funcall #'org-set-property (car p) (cdr p)))))
@@ -104,7 +103,7 @@
             (if (null headers)
                 (progn
                   (goto-char (point-max))
-                  (org-books--insert title author props)
+                  (org-books--insert nil title author props)
                   (save-buffer))
               (let* ((top-positions (-map (lambda (h) (marker-position (cdr h))) headers))
                      (bottom-positions (append (cdr top-positions) (list (point-max)))))
@@ -113,9 +112,12 @@
                                                          headers (if org-books-add-to-top top-positions bottom-positions))
                                  :action (lambda (pos)
                                            (goto-char pos)
-                                           (if org-books-add-to-top (next-line) (previous-line))
-                                           (org-books--insert title author props)
-                                           (save-buffer)))
+                                           (let ((level (if (org-current-level) (+ 1 (org-current-level)))))
+                                             (unless org-books-add-to-top (previous-line))
+                                             (goto-char (line-end-position))
+                                             (insert "\n")
+                                             (org-books--insert level title author props)
+                                             (save-buffer))))
                       :buffer "*helm org-books add*"))))))
     (message "org-books-file not set")))
 
