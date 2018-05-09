@@ -125,7 +125,7 @@
   "Add rating to book at given position."
   (interactive "d\nnRating (stars 1-5): ")
   (if (> rating 0)
-      (org-set-property "RATING" (s-join "" (loop for i to (- rating 1) collect ":star:")))))
+      (org-set-property "RATING" (s-repeat rating ":star:"))))
 
 (provide 'org-books)
 ;;; org-books.el ends here
