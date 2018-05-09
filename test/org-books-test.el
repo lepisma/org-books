@@ -1,6 +1,6 @@
 ;; Tests
 
-(load-file "org-books.el")
+(load-file "org-books-get-details.el")
 
 (ert-deftest test-goodreads ()
   (let* ((url "https://www.goodreads.com/book/show/23754.Preludes_Nocturnes")

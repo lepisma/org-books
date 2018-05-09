@@ -4,7 +4,7 @@
 
 ;; Author: Abhinav Tushar <abhinav.tushar.vs@gmail.com>
 ;; Version: 0.1.6
-;; Package-Requires: ((enlive "0.0.1") (s "1.11.0"))
+;; Package-Requires: ((enlive "0.0.1") (s "1.11.0") (helm "2.9.2") (dash "2.14.1") (emacs "25"))
 ;; URL: https://github.com/lepisma/org-books
 
 ;;; Commentary:
@@ -29,9 +29,12 @@
 
 ;;; Code:
 
-(require 'enlive)
 (require 'org)
 (require 's)
+(require 'helm)
+(require 'helm-org)
+(require 'dash)
+(require 'org-books-get-details)
 
 
 (defgroup org-books nil
@@ -48,8 +51,10 @@
   :type 'boolean
   :group 'org-books)
 
-(defun -org-books-clean-str (text)
-  (s-trim (s-collapse-whitespace text)))
+(defcustom org-books-file-depth 2
+  "The max depth for adding book under headings"
+  :type 'string
+  :group 'org-books)
 
 (defun org-books-create-file (file-path)
   "Write initialization stuff in a new file"
@@ -79,19 +84,13 @@
         (message "Error in fetching url. Please retry.")
       (apply #'org-books-add-book details))))
 
-(defun org-books-get-details-amazon (url)
-  "Get book details from amazon page"
-  (let ((page-node (enlive-fetch url)))
-    (list (-org-books-clean-str (enlive-text (enlive-get-element-by-id page-node "productTitle")))
-          (-org-books-clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author > a]))))
-          `(("AMAZON" . ,url)))))
-
-(defun org-books-get-details-goodreads (url)
-  "Get book details from goodreads page"
-  (let ((page-node (enlive-fetch url)))
-    (list (-org-books-clean-str (enlive-text (enlive-get-element-by-id page-node "bookTitle")))
-          (-org-books-clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.authorName > span]))))
-          `(("GOODREADS" . ,url)))))
+(defun org-books--insert (title author &optional props)
+  "Insert book template at current position and buffer"
+  (org-insert-heading nil nil nil)
+  (insert title "\n")
+  (org-set-property "AUTHOR" author)
+  (org-set-property "ADDED" (format-time-string "<%Y-%02m-%02d>"))
+  (-each props (lambda (p) (funcall #'org-set-property (car p) (cdr p)))))
 
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
@@ -99,19 +98,25 @@
   (interactive "sBook Title: \nsAuthor: ")
   (if org-books-file
       (save-excursion
-        (let ((buffer (find-file-noselect org-books-file)))
-          (with-current-buffer buffer
-            (if (and org-books-add-to-top
-                     (progn (goto-char (point-min))
-                            (search-forward "*" nil t)))
-                (previous-line)
-              (goto-char (point-max)))
-            (org-insert-heading nil nil t)
-            (insert title "\n")
-            (org-set-property "AUTHOR" author)
-            (org-set-property "ADDED" (format-time-string "<%Y-%02m-%02d>"))
-            (mapc (lambda (p) (org-set-property (car p) (cdr p))) props)
-            (save-buffer))))
+        (with-current-buffer (find-file-noselect org-books-file)
+          (let* ((helm-org-headings-max-depth org-books-file-depth)
+                 (headers (helm-org-get-candidates (list (current-buffer)))))
+            (if (null headers)
+                (progn
+                  (goto-char (point-max))
+                  (org-books--insert title author props)
+                  (save-buffer))
+              (let* ((top-positions (-map (lambda (h) (marker-position (cdr h))) headers))
+                     (bottom-positions (append (cdr top-positions) (list (point-max)))))
+                (helm :sources (helm-build-sync-source "org-book categories"
+                                 :candidates (--zip-with (cons (car it) other)
+                                                         headers (if org-books-add-to-top top-positions bottom-positions))
+                                 :action (lambda (pos)
+                                           (goto-char pos)
+                                           (if org-books-add-to-top (next-line) (previous-line))
+                                           (org-books--insert title author props)
+                                           (save-buffer)))
+                      :buffer "*helm org-books add*"))))))
     (message "org-books-file not set")))
 
 ;;;###autoload
