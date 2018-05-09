@@ -43,7 +43,7 @@
 
 (defcustom org-books-file nil
   "File for keeping reading list"
-  :type 'string
+  :type 'file
   :group 'org-books)
 
 (defcustom org-books-add-to-top t
