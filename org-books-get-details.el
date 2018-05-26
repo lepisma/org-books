@@ -28,17 +28,20 @@
 
 (require 'enlive)
 (require 's)
+(require 'url-parse)
 
 (defun org-books-get-details--clean-str (text)
   (s-trim (s-collapse-whitespace text)))
 
 (defun org-books-get-details-amazon-p (url)
   "Tell if the url is an amazon url"
-  (s-contains? "amazon.com" url))
+  (let ((parsed (url-generic-parse-url url)))
+    (s-starts-with? "amazon." (s-chop-prefix "www." (url-host parsed)))))
 
 (defun org-books-get-details-goodreads-p (url)
   "Tell if the url is for a goodreads page"
-  (s-contains? "goodreads.com" url))
+  (let ((parsed (url-generic-parse-url url)))
+    (s-starts-with? "goodreads." (s-chop-prefix "www." (url-host parsed)))))
 
 (defun org-books-get-details-amazon (url)
   "Get book details from amazon page"
