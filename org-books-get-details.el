@@ -30,6 +30,7 @@
 (require 's)
 (require 'url-parse)
 (require 'cl-lib)
+(require 'dash)
 
 (defcustom org-books-url-patterns
   '((amazon . "^\\(www\\.\\)?amazon\\.")
@@ -52,11 +53,16 @@
     (amazon (org-books-get-details-amazon url))
     (goodreads (org-books-get-details-goodreads url))))
 
+(defun org-books-get-details-amazon-authors (page-node)
+  "Return author names for amazon page"
+  (or (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author .contributorNameID]))
+      (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author > a]))))
+
 (defun org-books-get-details-amazon (url)
   "Get book details from amazon page"
   (let* ((page-node (enlive-fetch url))
          (title (org-books--clean-str (enlive-text (enlive-get-element-by-id page-node "productTitle"))))
-         (author (org-books--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author > a]))))))
+         (author (s-join ", " (org-books-get-details-amazon-authors page-node))))
     (if (not (string-equal title ""))
         (list title author `(("AMAZON" . ,url))))))
 

@@ -27,3 +27,9 @@
          (res (org-books-get-details-amazon url)))
     (should (string-equal (first res) "The Organization Man"))
     (should (string-equal (second res) "William H. Whyte, Joseph Nocera"))))
+
+(ert-deftest test-amazon-with-author-page ()
+  (let* ((url "https://www.amazon.com/Elements-Programming-Style-2nd/dp/0070342075")
+         (res (org-books-get-details-amazon url)))
+    (should (string-equal (first res) "The Elements of Programming Style, 2nd Edition"))
+    (should (string-equal (second res) "Brian W. Kernighan, P. J. Plauger"))))
