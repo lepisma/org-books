@@ -29,33 +29,44 @@
 (require 'enlive)
 (require 's)
 (require 'url-parse)
+(require 'cl-lib)
 
-(defun org-books-get-details--clean-str (text)
+(defcustom org-books-url-patterns
+  '((amazon . "^\\(www\\.\\)?amazon\\.")
+    (goodreads . "^\\(www\\.\\)?goodreads\\.com"))
+  "Patterns for detecting url types")
+
+(defun org-books--clean-str (text)
   (s-trim (s-collapse-whitespace text)))
 
-(defun org-books-get-details-amazon-p (url)
-  "Tell if the url is an amazon url"
-  (let ((parsed (url-generic-parse-url url)))
-    (s-starts-with? "amazon." (s-chop-prefix "www." (url-host parsed)))))
+(defun org-books-get-url-type (url pattern-alist)
+  "Return type of url using the regex pattern"
+  (unless (null pattern-alist)
+    (let ((pattern (cdr (car pattern-alist))))
+      (if (s-matches? pattern (url-host (url-generic-parse-url url)))
+          (caar pattern-alist)
+        (org-books-get-url-type url (cdr pattern-alist))))))
 
-(defun org-books-get-details-goodreads-p (url)
-  "Tell if the url is for a goodreads page"
-  (let ((parsed (url-generic-parse-url url)))
-    (s-starts-with? "goodreads." (s-chop-prefix "www." (url-host parsed)))))
+(defun org-books-get-details (url url-type)
+  (cl-case url-type
+    (amazon (org-books-get-details-amazon url))
+    (goodreads (org-books-get-details-goodreads url))))
 
 (defun org-books-get-details-amazon (url)
   "Get book details from amazon page"
-  (let ((page-node (enlive-fetch url)))
-    (list (org-books-get-details--clean-str (enlive-text (enlive-get-element-by-id page-node "productTitle")))
-          (org-books-get-details--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author > a]))))
-          `(("AMAZON" . ,url)))))
+  (let* ((page-node (enlive-fetch url))
+         (title (org-books--clean-str (enlive-text (enlive-get-element-by-id page-node "productTitle"))))
+         (author (org-books--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author > a]))))))
+    (if (not (string-equal title ""))
+        (list title author `(("AMAZON" . ,url))))))
 
 (defun org-books-get-details-goodreads (url)
   "Get book details from goodreads page"
-  (let ((page-node (enlive-fetch url)))
-    (list (org-books-get-details--clean-str (enlive-text (enlive-get-element-by-id page-node "bookTitle")))
-          (org-books-get-details--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.authorName > span]))))
-          `(("GOODREADS" . ,url)))))
+  (let* ((page-node (enlive-fetch url))
+         (title (org-books--clean-str (enlive-text (enlive-get-element-by-id page-node "bookTitle"))))
+         (author (org-books--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.authorName > span]))))))
+    (if (not (string-equal title ""))
+        (list title author `(("GOODREADS" . ,url))))))
 
 (provide 'org-books-get-details)
 

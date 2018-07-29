@@ -77,14 +77,13 @@
 (defun org-books-add-url (url)
   "Add book from web url"
   (interactive "sUrl: ")
-  (let ((details (cond ((org-books-get-details-amazon-p url)
-                        (org-books-get-details-amazon url))
-                       ((org-books-get-details-goodreads-p url)
-                        (org-books-get-details-goodreads url))
-                       (t (message "Url not recognized")))))
-    (if (string-equal (first details) "")
-        (message "Error in fetching url. Please retry.")
-      (apply #'org-books-add-book details))))
+  (let ((url-type (org-books-get-url-type url org-books-url-patterns)))
+    (if (null url-type)
+        (message "Url not recognized")
+      (let ((details (org-books-get-details url url-type)))
+        (if (null details)
+            (message "Error in fetching url. Please retry.")
+          (apply #'org-books-add-book details))))))
 
 (defun org-books--insert (level title author &optional props)
   "Insert book template at current position and buffer"
