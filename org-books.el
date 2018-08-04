@@ -92,6 +92,18 @@
   (org-set-property "ADDED" (format-time-string "<%Y-%02m-%02d>"))
   (-each props (lambda (p) (org-set-property (car p) (cdr p)))))
 
+(defun org-books-goto-place ()
+  "Move to the position where insertion should happen"
+  (if org-books-add-to-top
+      (let ((level (or (org-current-level) 0))
+            (bound (save-excursion (org-get-next-sibling))))
+        (if (re-search-forward (format "^\\*\\{%s\\}" (+ level 1)) bound t)
+            (previous-line)))
+    (progn
+      (if (org-get-next-sibling)
+          (previous-line))))
+  (goto-char (line-end-position)))
+
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
   "Add a book to the org-books-file. Optional add props"
@@ -106,19 +118,16 @@
                   (goto-char (point-max))
                   (org-books--insert 1 title author props)
                   (save-buffer))
-              (let* ((top-positions (-map (lambda (h) (marker-position (cdr h))) headers))
-                     (bottom-positions (append (cdr top-positions) (list (point-max)))))
-                (helm :sources (helm-build-sync-source "org-book categories"
-                                 :candidates (--zip-with (cons (car it) other)
-                                                         headers (if org-books-add-to-top top-positions bottom-positions))
-                                 :action (lambda (pos)
-                                           (goto-char pos)
-                                           (unless org-books-add-to-top (previous-line))
-                                           (goto-char (line-end-position))
+              (helm :sources (helm-build-sync-source "org-book categories"
+                               :candidates (-map (lambda (h) (cons (car h) (marker-position (cdr h)))) headers)
+                               :action (lambda (pos)
+                                         (goto-char pos)
+                                         (let ((level (or (org-current-level) 0)))
+                                           (org-books-goto-place)
                                            (insert "\n")
-                                           (org-books--insert (+ 1 (or (org-current-level) 0)) title author props)
-                                           (save-buffer)))
-                      :buffer "*helm org-books add*"))))))
+                                           (org-books--insert (+ level 1) title author props)
+                                           (save-buffer))))
+                    :buffer "*helm org-books add*")))))
     (message "org-books-file not set")))
 
 ;;;###autoload
