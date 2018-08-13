@@ -89,7 +89,7 @@
   "Insert book template at current position and buffer"
   (insert (make-string level ?*) " " title "\n")
   (org-set-property "AUTHOR" author)
-  (org-set-property "ADDED" (format-time-string "<%Y-%02m-%02d>"))
+  (org-set-property "ADDED" (format-time-string "[%Y-%02m-%02d]"))
   (-each props (lambda (p) (org-set-property (car p) (cdr p)))))
 
 (defun org-books-goto-place ()
