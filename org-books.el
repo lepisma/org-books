@@ -121,6 +121,7 @@
               (helm :sources (helm-build-sync-source "org-book categories"
                                :candidates (-map (lambda (h) (cons (car h) (marker-position (cdr h)))) headers)
                                :action (lambda (pos)
+                                         (org-content)
                                          (goto-char pos)
                                          (let ((level (or (org-current-level) 0)))
                                            (org-books-goto-place)
