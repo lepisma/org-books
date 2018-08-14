@@ -89,7 +89,7 @@
 (defun org-books-add-isbn (isbn)
   "Add book from ISBN"
   (interactive "sISBN: ")
-  (let* ((url (concat "https://openlibrary.org/api/books?bibkeys=ISBN:" isbn "&jscmd=data&format=json"))
+  (let* ((url (org-books-get-url-from-isbn isbn))
 	 (details (org-books-get-details url (org-books-get-url-type url org-books-url-patterns))))
     (if (null details)
 	(message "Error in fetching url. Please retry.")

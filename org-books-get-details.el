@@ -86,6 +86,9 @@
     (if (not (string-equal title ""))
         (list title author `(("GOODREADS" . ,url))))))
 
+(defun org-books-get-url-from-isbn (isbn)
+  (concat "https://openlibrary.org/api/books?bibkeys=ISBN:" isbn "&jscmd=data&format=json"))
+
 (defun org-books-get-details-isbn (url)
   "Get book details from openlibrary ISBN response"
   (let* ((json-object-type 'hash-table)
