@@ -31,11 +31,22 @@
 (require 'url-parse)
 (require 'cl-lib)
 (require 'dash)
+(require 'json)
+(require 'url)
 
 (defcustom org-books-url-patterns
   '((amazon . "^\\(www\\.\\)?amazon\\.")
-    (goodreads . "^\\(www\\.\\)?goodreads\\.com"))
+    (goodreads . "^\\(www\\.\\)?goodreads\\.com")
+    (isbn . "openlibrary\\.org"))
   "Patterns for detecting url types")
+
+(defun get-json (url)
+  (interactive)
+  (progn
+    (with-current-buffer (url-retrieve-synchronously url)
+      (goto-char (point-min))
+      (re-search-forward "^$")
+      (json-read))))
 
 (defun org-books--clean-str (text)
   (s-trim (s-collapse-whitespace text)))
@@ -51,7 +62,8 @@
 (defun org-books-get-details (url url-type)
   (cl-case url-type
     (amazon (org-books-get-details-amazon url))
-    (goodreads (org-books-get-details-goodreads url))))
+    (goodreads (org-books-get-details-goodreads url))
+    (isbn (org-books-get-details-isbn url))))
 
 (defun org-books-get-details-amazon-authors (page-node)
   "Return author names for amazon page"
@@ -73,6 +85,18 @@
          (author (org-books--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.authorName > span]))))))
     (if (not (string-equal title ""))
         (list title author `(("GOODREADS" . ,url))))))
+
+(defun org-books-get-details-isbn (url)
+  "Get book details from openlibrary ISBN response"
+  (let* ((json-object-type 'hash-table)
+	 (json-array-type 'list)
+	 (json-key-type 'string)
+	 (json (get-json url))
+	 (isbn (car (hash-table-keys json)))
+	 (data (gethash isbn json))
+	 (title (gethash "title" data))
+	 (author (gethash "by_statement" data)))
+    (list title author `(("ISBN" . ,url)))))
 
 (provide 'org-books-get-details)
 

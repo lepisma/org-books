@@ -85,6 +85,16 @@
             (message "Error in fetching url. Please retry.")
           (apply #'org-books-add-book details))))))
 
+;;;###autoload
+(defun org-books-add-isbn (isbn)
+  "Add book from ISBN"
+  (interactive "sISBN: ")
+  (let* ((url (concat "https://openlibrary.org/api/books?bibkeys=ISBN:" isbn "&jscmd=data&format=json"))
+	 (details (org-books-get-details url (org-books-get-url-type url org-books-url-patterns))))
+    (if (null details)
+	(message "Error in fetching url. Please retry.")
+      (apply #'org-books-add-book details))))
+
 (defun org-books--insert (level title author &optional props)
   "Insert book template at current position and buffer"
   (insert (make-string level ?*) " " title "\n")
