@@ -33,6 +33,7 @@
 (require 'dash)
 (require 'json)
 (require 'url)
+(require 'subr-x)
 
 (defcustom org-books-url-patterns
   '((amazon . "^\\(www\\.\\)?amazon\\.")
