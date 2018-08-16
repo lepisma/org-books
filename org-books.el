@@ -6,6 +6,7 @@
 ;; Version: 0.2.7
 ;; Package-Requires: ((enlive "0.0.1") (s "1.11.0") (helm "2.9.2") (dash "2.14.1") (emacs "25"))
 ;; URL: https://github.com/lepisma/org-books
+;; Keywords: outlines
 
 ;;; Commentary:
 
@@ -38,26 +39,26 @@
 
 
 (defgroup org-books nil
-  "Org reading list management"
+  "Org reading list management."
   :group 'org)
 
 (defcustom org-books-file nil
-  "File for keeping reading list"
+  "File for keeping reading list."
   :type 'file
   :group 'org-books)
 
 (defcustom org-books-add-to-top t
-  "Should add new books at the top?"
+  "Should add new books as the first item under a heading?"
   :type 'boolean
   :group 'org-books)
 
 (defcustom org-books-file-depth 2
-  "The max depth for adding book under headings"
+  "The max depth for adding book under headings."
   :type 'integer
   :group 'org-books)
 
 (defun org-books-create-file (file-path)
-  "Write initialization stuff in a new file"
+  "Write initialization stuff in a new file at FILE-PATH."
   (interactive "FFile: ")
   (if (file-exists-p file-path)
       (message "There is already a file present, skipping.")
@@ -68,14 +69,14 @@
 
 ;;;###autoload
 (defun org-books-cliplink ()
-  "Clip link from clipboard"
+  "Clip link from clipboard."
   (interactive)
   (let ((url (substring-no-properties (current-kill 0))))
     (org-books-add-url url)))
 
 ;;;###autoload
 (defun org-books-add-url (url)
-  "Add book from web url"
+  "Add book from web URL."
   (interactive "sUrl: ")
   (let ((url-type (org-books-get-url-type url org-books-url-patterns)))
     (if (null url-type)
@@ -87,36 +88,38 @@
 
 ;;;###autoload
 (defun org-books-add-isbn (isbn)
-  "Add book from ISBN"
+  "Add book from ISBN."
   (interactive "sISBN: ")
-  (let* ((url (org-books-get-url-from-isbn isbn))
-	 (details (org-books-get-details url (org-books-get-url-type url org-books-url-patterns))))
-    (if (null details)
-	(message "Error in fetching url. Please retry.")
-      (apply #'org-books-add-book details))))
+  (let* ((url (org-books-get-url-from-isbn isbn)))
+   (details (org-books-get-details url (org-books-get-url-type url org-books-url-patterns))
+    (if (null details))))
+  (message "Error in fetching url. Please retry."
+      (apply #'org-books-add-book details)))
 
 (defun org-books--insert (level title author &optional props)
-  "Insert book template at current position and buffer"
+  "Insert book template (specified by TITLE and AUTHOR) at current position at LEVEL heading.
+Also set all the PROPS for that org entry."
   (insert (make-string level ?*) " " title "\n")
   (org-set-property "AUTHOR" author)
   (org-set-property "ADDED" (format-time-string "[%Y-%02m-%02d]"))
-  (-each props (lambda (p) (org-set-property (car p) (cdr p)))))
+  (dolist (prop props)
+    (org-set-property (car prop) (cdr prop))))
 
 (defun org-books-goto-place ()
-  "Move to the position where insertion should happen"
+  "Move to the position where insertion should happen."
   (if org-books-add-to-top
       (let ((level (or (org-current-level) 0))
             (bound (save-excursion (org-get-next-sibling))))
         (if (re-search-forward (format "^\\*\\{%s\\}" (+ level 1)) bound t)
             (previous-line)))
-    (progn
-      (if (org-get-next-sibling)
-          (previous-line))))
+    (if (org-get-next-sibling)
+        (previous-line)))
   (goto-char (line-end-position)))
 
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
-  "Add a book to the org-books-file. Optional add props"
+  "Add a book (specified by TITLE and AUTHOR) to the ‘org-books-file’.
+Optionally apply PROPS."
   (interactive "sBook Title: \nsAuthor: ")
   (if org-books-file
       (save-excursion
@@ -143,7 +146,7 @@
 
 ;;;###autoload
 (defun org-books-rate-book (position rating)
-  "Add rating to book at given position."
+  "Apply RATING to book at given POSITION."
   (interactive "d\nnRating (stars 1-5): ")
   (if (> rating 0)
       (org-set-property "RATING" (s-repeat rating ":star:"))))

@@ -6,15 +6,15 @@
   (let ((urls (list "https://www.goodreads.com"
                     "http://goodreads.com"
                     "http://www.goodreads.com/")))
-    (loop for url in urls
-          do (should (eq (org-books-get-url-type url org-books-url-patterns) 'goodreads)))))
+    (dolist (url urls)
+      (should (eq (org-books-get-url-type url org-books-url-patterns) 'goodreads)))))
 
 (ert-deftest test-amazon-url ()
   (let ((urls (list "https://www.amazon.com"
                     "http://amazon.in"
                     "http://www.amazon.de")))
-    (loop for url in urls
-          do (should (eq (org-books-get-url-type url org-books-url-patterns) 'amazon)))))
+    (dolist (url urls)
+      (should (eq (org-books-get-url-type url org-books-url-patterns) 'amazon)))))
 
 (ert-deftest test-goodreads ()
   (let* ((url "https://www.goodreads.com/book/show/23754.Preludes_Nocturnes")
@@ -36,6 +36,6 @@
 
 (ert-deftest test-isbn ()
   (let* ((isbn "0517149257")
-	 (res (org-books-get-details-isbn (org-books-get-url-from-isbn isbn))))
+	       (res (org-books-get-details-isbn (org-books-get-url-from-isbn isbn))))
     (should (string-equal (first res) "The Ultimate Hitchhiker's Guide"))
     (should (string-equal (second res) "Douglas Adams."))))
