@@ -33,3 +33,9 @@
          (res (org-books-get-details-amazon url)))
     (should (string-equal (first res) "The Elements of Programming Style, 2nd Edition"))
     (should (string-equal (second res) "Brian W. Kernighan, P. J. Plauger"))))
+
+(ert-deftest test-isbn ()
+  (let* ((isbn "0517149257")
+	 (res (org-books-get-details-isbn (org-books-get-url-from-isbn isbn))))
+    (should (string-equal (first res) "The Ultimate Hitchhiker's Guide"))
+    (should (string-equal (second res) "Douglas Adams."))))
