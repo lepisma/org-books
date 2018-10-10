@@ -3,16 +3,21 @@
 
 [[https://travis-ci.org/lepisma/org-books][https://img.shields.io/travis/lepisma/org-books/master.svg?style=for-the-badge]]
 
-Reading list management using org-mode
+Reading list management using org-mode. A sample list lives on my wiki [[https://lepisma.github.io/wiki/readings/books][here]].
 
 [[file:./screen.gif]]
 
-- Set path to reading list ~(setq org-books-file "~/my-list.org")~. Create a new
-  file using function ~org-books-create-file~.
+** Quickstart
 
-- To add books manually, use ~org-books-add-book~ function. To add from
-  goodreads/amazon urls, call ~org-books-add-url~ or use ~org-books-cliplink~ if url
-  is in clipboard.
+#+BEGIN_SRC emacs-lisp
+;; Set path to the reading list org file
+(setq org-books-file "~/my-list.org")
+
+;; A basic template file can be generated using the function `org-books-create-file'.
+#+END_SRC
+
+- To add books manually, use ~org-books-add-book~ function. To add from urls, call
+  ~org-books-add-url~ (or use ~org-books-cliplink~ if url is in clipboard).
 
 - To give ratings, go to the entry and call ~org-books-rate-book~.
 
@@ -21,3 +26,29 @@ Reading list management using org-mode
 
 - ~org-books-add-to-top~ (default ~t~) tells whether to add the book at the top or
   bottom under the selected heading.
+
+** Adding new source
+
+A /source/ for books provide a /details function/ that takes certain input (like a
+url in case of amazon) and returns a list of ~title~, ~author~ and ~props~. ~props~ is
+an alist which gets added to the entry as org properties. Here is the output
+from amazon's:
+
+#+BEGIN_SRC emacs-lisp :exports both :results output
+(print (org-books-get-details-amazon "https://www.amazon.in/Algebra-Chapter-Graduate-Studies-Mathematics/dp/0821847813/"))
+#+END_SRC
+
+#+RESULTS:
+: ("Algebra: Chapter 0 (Graduate Studies in Mathematics)" "Paolo Aluffi" (("AMAZON" . "https://www.amazon.in/Algebra-Chapter-Graduate-Studies-Mathematics/dp/0821847813/")))
+
+With the details function defined, write something to make a user facing
+interface which, after getting the details, calls ~org-book-add-book~ function.
+For an example, see the function ~org-books-add-url~.
+
+As of now there are the following sources:
+
+- Manual (input: title, author etc.)
+- Amazon (input: url)
+- Goodreads (input: url)
+- Openlibrary (input: url)
+- ISBN (input: ISBN, dispatches openlibrary url source)
