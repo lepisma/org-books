@@ -90,11 +90,7 @@
 (defun org-books-add-isbn (isbn)
   "Add book from ISBN."
   (interactive "sISBN: ")
-  (let* ((url (org-books-get-url-from-isbn isbn))
-         (details (org-books-get-details url (org-books-get-url-type url org-books-url-patterns))))
-    (if (null details)
-        (message "Error in fetching url. Please retry.")
-      (apply #'org-books-add-book details))))
+  (org-books-add-url (org-books-get-url-from-isbn isbn)))
 
 (defun org-books--insert (level title author &optional props)
   "Insert book template (specified by TITLE and AUTHOR) at current position at LEVEL heading.
