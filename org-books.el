@@ -67,6 +67,15 @@
               "#+AUTHOR: " (replace-regexp-in-string "" " " user-full-name) "\n\n"
               "#+TODO: READING NEXT | READ\n\n"))))
 
+(defun org-books-all-authors ()
+  "Return a list of authors in the org-books-file."
+  (with-current-buffer (find-file-noselect org-books-file)
+    (->> (org-property-values "AUTHOR")
+       (-reduce-from (lambda (acc line) (append acc (s-split "," line))) nil)
+       (-map #'s-trim)
+       (-distinct)
+       (-sort #'s-less-p))))
+
 ;;;###autoload
 (defun org-books-cliplink ()
   "Clip link from clipboard."
