@@ -125,7 +125,11 @@ Also set all the PROPS for that org entry."
 (defun org-books-add-book (title author &optional props)
   "Add a book (specified by TITLE and AUTHOR) to the ‘org-books-file’.
 Optionally apply PROPS."
-  (interactive "sBook Title: \nsAuthor: ")
+  (interactive
+   (let ((completion-ignore-case t))
+     (list
+      (read-string "Book Title: ")
+      (s-join ", " (completing-read-multiple "Author(s): " (org-books-all-authors))))))
   (if org-books-file
       (save-excursion
         (with-current-buffer (find-file-noselect org-books-file)
