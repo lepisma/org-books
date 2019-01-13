@@ -76,6 +76,24 @@
        (-distinct)
        (-sort #'s-less-p))))
 
+(defun org-books-entry-p ()
+  "Tell if current entry is an org-books entry."
+  (if (org-entry-get nil "AUTHOR") t))
+
+(defun org-books-map-entries (func &optional match scope &rest skip)
+  "Similar to org-map-entries but only walks on org-books entries.
+Note that even though the arguments mimic org-map-entries' not all might work
+in the intended way."
+  (with-current-buffer (find-file-noselect org-books-file)
+    (let ((ignore-sym (gensym)))
+      (-remove-item ignore-sym
+                    (apply #'org-map-entries
+                           (lambda ()
+                             (if (org-books-entry-p)
+                                 (if (functionp func) (funcall func) (funcall (list 'lambda () func)))
+                               ignore-sym))
+                           match scope skip)))))
+
 ;;;###autoload
 (defun org-books-cliplink ()
   "Clip link from clipboard."
