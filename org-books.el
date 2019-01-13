@@ -80,6 +80,12 @@
   "Tell if current entry is an org-books entry."
   (if (org-entry-get nil "AUTHOR") t))
 
+(defun org-books-get-closed-time ()
+  "Return closed time of the current entry."
+  (let ((ent-body (buffer-substring-no-properties (org-entry-beginning-position) (org-entry-end-position))))
+    (if (string-match org-closed-time-regexp ent-body)
+        (parse-time-string (match-string-no-properties 1 ent-body)))))
+
 (defun org-books-map-entries (func &optional match scope &rest skip)
   "Similar to org-map-entries but only walks on org-books entries.
 Note that even though the arguments mimic org-map-entries' not all might work
