@@ -101,14 +101,21 @@
   (interactive "sISBN: ")
   (org-books-add-url (org-books-get-url-from-isbn isbn)))
 
+(defun org-books-format (level title author &optional props)
+  "Format the book details."
+  (with-temp-buffer
+    (org-mode)
+    (insert (make-string level ?*) " " title "\n")
+    (org-set-property "AUTHOR" author)
+    (org-set-property "ADDED" (format-time-string "[%Y-%02m-%02d]"))
+    (dolist (prop props)
+      (org-set-property (car prop) (cdr prop)))
+    (buffer-substring-no-properties (point-min) (point-max))))
+
 (defun org-books--insert (level title author &optional props)
   "Insert book template (specified by TITLE and AUTHOR) at current position at LEVEL heading.
 Also set all the PROPS for that org entry."
-  (insert (make-string level ?*) " " title "\n")
-  (org-set-property "AUTHOR" author)
-  (org-set-property "ADDED" (format-time-string "[%Y-%02m-%02d]"))
-  (dolist (prop props)
-    (org-set-property (car prop) (cdr prop))))
+  (insert (org-books-format level title author props)))
 
 (defun org-books-goto-place ()
   "Move to the position where insertion should happen."

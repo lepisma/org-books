@@ -52,3 +52,28 @@ As of now there are the following sources:
 - Goodreads (input: url)
 - Openlibrary (input: url)
 - ISBN (input: ISBN, dispatches openlibrary url source)
+
+** Using org-capture
+For a more flexible setup, you might just want to use ~org-capture~, possibly with
+a little help from functions present in this package. Directly using capture
+gives you much more flexibility over the structure and organization of entries.
+Here we describe a few capture /templates/ that can be used:
+
+*** Manual entry
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-capture-templates
+        '(("b" "Book" entry (file "some-file.org")
+           "* %^{TITLE}\n:PROPERTIES:\n:ADDED: %<[%Y-%02m-%02d]>\n:END:%^{AUTHOR}p\n%?" :empty-lines 1)))
+#+END_SRC
+
+*** Using url from clipboard
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-capture-templates
+        '(("b" "Book" entry (file "some-file.org")
+           "%(let* ((url (substring-no-properties (current-kill 0)))
+                    (url-type (org-books-get-url-type url org-books-url-patterns))
+                    (details (if url-type (org-books-get-details url url-type))))
+               (when details (apply #'org-books-format 1 details)))")))
+#+END_SRC
