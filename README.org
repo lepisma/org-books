@@ -3,7 +3,7 @@
 
 [[https://travis-ci.org/lepisma/org-books][https://img.shields.io/travis/lepisma/org-books/master.svg?style=flat-square]]
 
-Reading list management using org-mode. A sample list lives on my wiki [[https://lepisma.github.io/wiki/readings/books][here]].
+Reading list management using org-mode. A sample list lives on my wiki [[https://lepisma.xyz/wiki/readings/books][here]].
 
 [[file:./screen.gif]]
 
