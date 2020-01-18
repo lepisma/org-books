@@ -152,6 +152,15 @@ Also set all the PROPS for that org entry."
         (previous-line)))
   (goto-char (line-end-position)))
 
+(defun org-books-get-headers ()
+  "Return list of categories under which books can be filed. Each
+item is a pair of title (propertized) and marker specifying the
+position in the file."
+  (let ((helm-org-headings-max-depth org-books-file-depth))
+    (mapcar (lambda (it)
+              (cons it (get-text-property 0 'helm-realvalue it)))
+            (helm-org--get-candidates-in-file org-books-file helm-org-headings-fontify t nil t))))e
+
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
   "Add a book (specified by TITLE and AUTHOR) to the ‘org-books-file’.
@@ -164,8 +173,7 @@ Optionally apply PROPS."
   (if org-books-file
       (save-excursion
         (with-current-buffer (find-file-noselect org-books-file)
-          (let* ((helm-org-headings-max-depth org-books-file-depth)
-                 (headers (helm-org-get-candidates (list (current-buffer)))))
+          (let ((headers (org-books-get-headers)))
             (if (null headers)
                 (progn
                   (goto-char (point-max))
