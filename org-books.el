@@ -159,7 +159,7 @@ position in the file."
   (let ((helm-org-headings-max-depth org-books-file-depth))
     (mapcar (lambda (it)
               (cons it (get-text-property 0 'helm-realvalue it)))
-            (helm-org--get-candidates-in-file org-books-file helm-org-headings-fontify t nil t))))e
+            (helm-org--get-candidates-in-file org-books-file helm-org-headings-fontify t nil t))))
 
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
