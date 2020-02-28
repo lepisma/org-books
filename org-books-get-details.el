@@ -97,7 +97,8 @@
          (isbn (car (hash-table-keys json)))
          (data (gethash isbn json))
          (title (gethash "title" data))
-         (author (gethash "by_statement" data)))
+         (authors (gethash "authors" data))
+         (author (gethash "name" (car authors))))
     (list title author `(("ISBN" . ,url)))))
 
 (provide 'org-books-get-details)

@@ -1,6 +1,6 @@
 ;; Tests
 
-(load-file "org-books-get-details.el")
+(load-file "../org-books-get-details.el")
 
 (ert-deftest test-goodreads-url ()
   (let ((urls (list "https://www.goodreads.com"
@@ -38,4 +38,4 @@
   (let* ((isbn "0517149257")
 	       (res (org-books-get-details-isbn (org-books-get-url-from-isbn isbn))))
     (should (string-equal (first res) "The Ultimate Hitchhiker's Guide"))
-    (should (string-equal (second res) "Douglas Adams."))))
+    (should (string-equal (second res) "Douglas Adams"))))
