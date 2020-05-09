@@ -239,7 +239,7 @@ described in docstring of org-books-format function."
         (if (re-search-forward (format "^\\*\\{%s\\}" (+ level 1)) bound t)
             (previous-line)))
     (if (org-get-next-sibling)
-        (previous-line)))
+        (forward-line -1)))
   (goto-char (line-end-position)))
 
 (defun org-books-get-headers ()
