@@ -66,6 +66,7 @@
     (goodreads . "^\\(www\\.\\)?goodreads\\.com")
     (isbn . "openlibrary\\.org"))
   "Patterns for detecting url types."
+  :type '(alist :key-type symbol :value-type string)
   :group 'org-books)
 
 (defun org-books--get-json (url)
