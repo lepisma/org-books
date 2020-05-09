@@ -70,35 +70,36 @@
   :group 'org-books)
 
 (defun org-books--get-json (url)
+  "Parse JSON data from given URL."
   (with-current-buffer (url-retrieve-synchronously url)
     (goto-char (point-min))
     (re-search-forward "^$")
     (json-read)))
 
 (defun org-books--clean-str (text)
+  "Clean TEXT to remove extra whitespaces."
   (s-trim (s-collapse-whitespace text)))
 
 (defun org-books-get-url-type (url pattern-alist)
-  "Return type of url using the regex pattern."
+  "Return type of URL using PATTERN-ALIST.
+
+PATTERN-ALIST maps url-type symbol to regex pattern. See
+ORG-BOOKS-URL-PATTERNS for example."
   (unless (null pattern-alist)
     (let ((pattern (cdr (car pattern-alist))))
       (if (s-matches? pattern (url-host (url-generic-parse-url url)))
           (caar pattern-alist)
         (org-books-get-url-type url (cdr pattern-alist))))))
 
-(defun org-books-get-details (url url-type)
-  (cl-case url-type
-    (amazon (org-books-get-details-amazon url))
-    (goodreads (org-books-get-details-goodreads url))
-    (isbn (org-books-get-details-isbn url))))
-
 (defun org-books-get-details-amazon-authors (page-node)
-  "Return author names for amazon page."
+  "Return author names for amazon PAGE-NODE.
+
+PAGE-NODE is the return value of enlive-fetch on the page url."
   (or (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author .contributorNameID]))
       (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author > a]))))
 
 (defun org-books-get-details-amazon (url)
-  "Get book details from amazon page."
+  "Get book details from amazon URL."
   (let* ((page-node (enlive-fetch url))
          (title (org-books--clean-str (enlive-text (enlive-get-element-by-id page-node "productTitle"))))
          (author (s-join ", " (org-books-get-details-amazon-authors page-node))))
@@ -106,7 +107,7 @@
         (list title author `(("AMAZON" . ,url))))))
 
 (defun org-books-get-details-goodreads (url)
-  "Get book details from goodreads page."
+  "Get book details from goodreads URL."
   (let* ((page-node (enlive-fetch url))
          (title (org-books--clean-str (enlive-text (enlive-get-element-by-id page-node "bookTitle"))))
          (author (org-books--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.authorName > span]))))))
@@ -114,10 +115,11 @@
         (list title author `(("GOODREADS" . ,url))))))
 
 (defun org-books-get-url-from-isbn (isbn)
+  "Make and return openlibrary url from ISBN."
   (concat "https://openlibrary.org/api/books?bibkeys=ISBN:" isbn "&jscmd=data&format=json"))
 
 (defun org-books-get-details-isbn (url)
-  "Get book details from openlibrary ISBN response."
+  "Get book details from openlibrary ISBN response from URL."
   (let* ((json-object-type 'hash-table)
          (json-array-type 'list)
          (json-key-type 'string)
@@ -129,7 +131,15 @@
          (author (gethash "name" (car authors))))
     (list title author `(("ISBN" . ,url)))))
 
-;; -----
+(defun org-books-get-details (url url-type)
+  "Fetch book details from given URL and its URL-TYPE.
+
+Return a list of three items: title (string), author (string) and
+an alist of properties to be applied to the org entry."
+  (cl-case url-type
+    (amazon (org-books-get-details-amazon url))
+    (goodreads (org-books-get-details-goodreads url))
+    (isbn (org-books-get-details-isbn url))))
 
 (defun org-books-create-file (file-path)
   "Write initialization stuff in a new file at FILE-PATH."
@@ -162,8 +172,9 @@
 
 (defun org-books-map-entries (func &optional match scope &rest skip)
   "Similar to org-map-entries but only walks on org-books entries.
-Note that even though the arguments mimic org-map-entries' not all might work
-in the intended way."
+
+Arguments FUNC, MATCH, SCOPE and SKIP follow their definitions
+from org-map-entries."
   (with-current-buffer (find-file-noselect org-books-file)
     (let ((ignore-sym (gensym)))
       (-remove-item ignore-sym
@@ -200,7 +211,10 @@ in the intended way."
   (org-books-add-url (org-books-get-url-from-isbn isbn)))
 
 (defun org-books-format (level title author &optional props)
-  "Format the book details."
+  "Return details as an org headline entry.
+
+LEVEL specifies the headline level. TITLE goes as the main text.
+AUTHOR and properties from PROPS go as org-property."
   (with-temp-buffer
     (org-mode)
     (insert (make-string level ?*) " " title "\n")
@@ -211,8 +225,10 @@ in the intended way."
     (buffer-substring-no-properties (point-min) (point-max))))
 
 (defun org-books--insert (level title author &optional props)
-  "Insert book template (specified by TITLE and AUTHOR) at current position at LEVEL heading.
-Also set all the PROPS for that org entry."
+  "Insert book template at current position in buffer.
+
+Formatting is specified by LEVEL, TITLE, AUTHOR and PROPS as
+described in docstring of org-books-format function."
   (insert (org-books-format level title author props)))
 
 (defun org-books-goto-place ()
@@ -227,9 +243,10 @@ Also set all the PROPS for that org entry."
   (goto-char (line-end-position)))
 
 (defun org-books-get-headers ()
-  "Return list of categories under which books can be filed. Each
-item is a pair of title (propertized) and marker specifying the
-position in the file."
+  "Return list of categories under which books can be filed.
+
+Each item in list is a pair of title (propertized) and marker
+specifying the position in the file."
   (let ((helm-org-headings-max-depth org-books-file-depth))
     (mapcar (lambda (it)
               (cons it (get-text-property 0 'helm-realvalue it)))
@@ -237,7 +254,8 @@ position in the file."
 
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
-  "Add a book (specified by TITLE and AUTHOR) to the ‘org-books-file’.
+  "Add a book (specified by TITLE and AUTHOR) to the org-books-file.
+
 Optionally apply PROPS."
   (interactive
    (let ((completion-ignore-case t))
