@@ -127,8 +127,7 @@ PAGE-NODE is the return value of enlive-fetch on the page url."
          (isbn (car (hash-table-keys json)))
          (data (gethash isbn json))
          (title (gethash "title" data))
-         (authors (gethash "authors" data))
-         (author (gethash "name" (car authors))))
+         (author (gethash "name" (car (gethash "authors" data)))))
     (list title author `(("ISBN" . ,url)))))
 
 (defun org-books-get-details (url url-type)
