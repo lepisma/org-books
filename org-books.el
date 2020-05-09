@@ -83,7 +83,7 @@
 (defun org-books-get-url-type (url pattern-alist)
   "Return type of URL using PATTERN-ALIST.
 
-PATTERN-ALIST maps url-type symbol to regex pattern. See
+PATTERN-ALIST maps `url-type' symbol to regex pattern. See
 ORG-BOOKS-URL-PATTERNS for example."
   (unless (null pattern-alist)
     (let ((pattern (cdr (car pattern-alist))))
@@ -94,7 +94,7 @@ ORG-BOOKS-URL-PATTERNS for example."
 (defun org-books-get-details-amazon-authors (page-node)
   "Return author names for amazon PAGE-NODE.
 
-PAGE-NODE is the return value of enlive-fetch on the page url."
+PAGE-NODE is the return value of `enlive-fetch' on the page url."
   (or (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author .contributorNameID]))
       (mapcar #'enlive-text (enlive-query-all page-node [.a-section .author > a]))))
 
@@ -151,7 +151,7 @@ an alist of properties to be applied to the org entry."
               "#+TODO: READING NEXT | READ\n\n"))))
 
 (defun org-books-all-authors ()
-  "Return a list of authors in the org-books-file."
+  "Return a list of authors in the `org-books-file'."
   (with-current-buffer (find-file-noselect org-books-file)
     (->> (org-property-values "AUTHOR")
        (-reduce-from (lambda (acc line) (append acc (s-split "," line))) nil)
@@ -170,10 +170,10 @@ an alist of properties to be applied to the org entry."
         (parse-time-string (match-string-no-properties 1 ent-body)))))
 
 (defun org-books-map-entries (func &optional match scope &rest skip)
-  "Similar to org-map-entries but only walks on org-books entries.
+  "Similar to `org-map-entries' but only walks on org-books entries.
 
 Arguments FUNC, MATCH, SCOPE and SKIP follow their definitions
-from org-map-entries."
+from `org-map-entries'."
   (with-current-buffer (find-file-noselect org-books-file)
     (let ((ignore-sym (gensym)))
       (-remove-item ignore-sym
@@ -227,7 +227,7 @@ AUTHOR and properties from PROPS go as org-property."
   "Insert book template at current position in buffer.
 
 Formatting is specified by LEVEL, TITLE, AUTHOR and PROPS as
-described in docstring of org-books-format function."
+described in docstring of `org-books-format' function."
   (insert (org-books-format level title author props)))
 
 (defun org-books-goto-place ()
@@ -253,7 +253,7 @@ specifying the position in the file."
 
 ;;;###autoload
 (defun org-books-add-book (title author &optional props)
-  "Add a book (specified by TITLE and AUTHOR) to the org-books-file.
+  "Add a book (specified by TITLE and AUTHOR) to the `org-books-file'.
 
 Optionally apply PROPS."
   (interactive
