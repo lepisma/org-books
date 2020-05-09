@@ -1,6 +1,6 @@
 ;; Tests
 
-(load-file "org-books-get-details.el")
+(load-file "org-books.el")
 
 (ert-deftest test-goodreads-url ()
   (let ((urls (list "https://www.goodreads.com"
