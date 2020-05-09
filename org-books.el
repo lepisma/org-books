@@ -285,9 +285,9 @@ Optionally apply PROPS."
     (message "org-books-file not set")))
 
 ;;;###autoload
-(defun org-books-rate-book (position rating)
-  "Apply RATING to book at given POSITION."
-  (interactive "d\nnRating (stars 1-5): ")
+(defun org-books-rate-book (rating)
+  "Apply RATING to book at current point."
+  (interactive "nRating (stars 1-5): ")
   (if (> rating 0)
       (org-set-property "RATING" (s-repeat rating ":star:"))))
 
