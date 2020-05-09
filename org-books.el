@@ -236,7 +236,7 @@ described in docstring of org-books-format function."
       (let ((level (or (org-current-level) 0))
             (bound (save-excursion (org-get-next-sibling))))
         (if (re-search-forward (format "^\\*\\{%s\\}" (+ level 1)) bound t)
-            (previous-line)))
+            (forward-line -1)))
     (if (org-get-next-sibling)
         (forward-line -1)))
   (goto-char (line-end-position)))
