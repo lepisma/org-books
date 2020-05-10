@@ -1,4 +1,4 @@
-;;; org-books.el --- Reading list management with Org mode   -*- lexical-binding: t -*-
+;;; org-books.el --- Reading list management with Org mode and helm   -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017 Abhinav Tushar
 
