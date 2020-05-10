@@ -265,22 +265,21 @@ Optionally apply PROPS."
       (save-excursion
         (with-current-buffer (find-file-noselect org-books-file)
           (let ((headers (org-books-get-headers)))
-            (if (null headers)
-                (progn
-                  (goto-char (point-max))
-                  (org-books--insert 1 title author props)
-                  (save-buffer))
-              (helm :sources (helm-build-sync-source "org-book categories"
-                               :candidates (-map (lambda (h) (cons (car h) (marker-position (cdr h)))) headers)
-                               :action (lambda (pos)
-                                         (org-content)
-                                         (goto-char pos)
-                                         (let ((level (or (org-current-level) 0)))
-                                           (org-books-goto-place)
-                                           (insert "\n")
-                                           (org-books--insert (+ level 1) title author props)
-                                           (save-buffer))))
-                    :buffer "*helm org-books add*")))))
+            (if headers
+                (helm :sources (helm-build-sync-source "org-book categories"
+                                 :candidates (-map (lambda (h) (cons (car h) (marker-position (cdr h)))) headers)
+                                 :action (lambda (pos)
+                                           (org-content)
+                                           (goto-char pos)
+                                           (let ((level (or (org-current-level) 0)))
+                                             (org-books-goto-place)
+                                             (insert "\n")
+                                             (org-books--insert (+ level 1) title author props)
+                                             (save-buffer))))
+                      :buffer "*helm org-books add*")
+              (goto-char (point-max))
+              (org-books--insert 1 title author props)
+              (save-buffer)))))
     (message "org-books-file not set")))
 
 ;;;###autoload
