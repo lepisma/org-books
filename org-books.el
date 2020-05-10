@@ -155,7 +155,7 @@ an alist of properties to be applied to the org entry."
   (with-current-buffer (find-file-noselect org-books-file)
     (->> (org-property-values "AUTHOR")
        (-reduce-from (lambda (acc line) (append acc (s-split "," line))) nil)
-       (-map #'s-trim)
+       (mapcar #'s-trim)
        (-distinct)
        (-sort #'s-less-p))))
 
@@ -279,7 +279,7 @@ Optionally apply PROPS."
           (let ((headers (org-books-get-headers)))
             (if headers
                 (helm :sources (helm-build-sync-source "org-book categories"
-                                 :candidates (-map (lambda (h) (cons (car h) (marker-position (cdr h)))) headers)
+                                 :candidates (mapcar (lambda (h) (cons (car h) (marker-position (cdr h)))) headers)
                                  :action (lambda (pos) (org-books--insert-at-pos pos title author props)))
                       :buffer "*helm org-books add*")
               (goto-char (point-max))
