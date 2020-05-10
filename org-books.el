@@ -230,6 +230,18 @@ Formatting is specified by LEVEL, TITLE, AUTHOR and PROPS as
 described in docstring of `org-books-format' function."
   (insert (org-books-format level title author props)))
 
+(defun org-books--insert-at-pos (pos title author &optional props)
+  "Goto POS in current buffer, insert a new entry and save buffer.
+
+TITLE, AUTHOR and PROPS are formatted using `org-books-format'."
+  (org-content)
+  (goto-char pos)
+  (let ((level (or (org-current-level) 0)))
+    (org-books-goto-place)
+    (insert "\n")
+    (org-books--insert (+ level 1) title author props)
+    (save-buffer)))
+
 (defun org-books-goto-place ()
   "Move to the position where insertion should happen."
   (if org-books-add-to-top
@@ -268,14 +280,7 @@ Optionally apply PROPS."
             (if headers
                 (helm :sources (helm-build-sync-source "org-book categories"
                                  :candidates (-map (lambda (h) (cons (car h) (marker-position (cdr h)))) headers)
-                                 :action (lambda (pos)
-                                           (org-content)
-                                           (goto-char pos)
-                                           (let ((level (or (org-current-level) 0)))
-                                             (org-books-goto-place)
-                                             (insert "\n")
-                                             (org-books--insert (+ level 1) title author props)
-                                             (save-buffer))))
+                                 :action (lambda (pos) (org-books--insert-at-pos pos title author props)))
                       :buffer "*helm org-books add*")
               (goto-char (point-max))
               (org-books--insert 1 title author props)

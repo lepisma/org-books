@@ -1,0 +1,9 @@
+#+TITLE: Test file
+
+* Book category
+
+** Book Title
+   :PROPERTIES:
+   :AUTHOR:   Book Author
+   :ADDED:    [2020-05-10]
+   :END:

@@ -2,6 +2,13 @@
 
 (load-file "org-books.el")
 
+(require 'f)
+(require 's)
+
+(defun files-equal (file-a file-b)
+  (string-equal (f-read-text file-a 'utf-8)
+                (f-read-text file-b 'utf-8)))
+
 (ert-deftest test-goodreads-url ()
   (let ((urls (list "https://www.goodreads.com"
                     "http://goodreads.com"
@@ -39,3 +46,12 @@
 	       (res (org-books-get-details-isbn (org-books-get-url-from-isbn isbn))))
     (should (string-equal (first res) "The Ultimate Hitchhiker's Guide"))
     (should (string-equal (second res) "Douglas Adams"))))
+
+(ert-deftest test-basic-insertion ()
+  (let* ((pre-file "./test/files/insert-test-pre.org")
+         (post-file "./test/files/insert-test-post.org")
+         (org-books-file (make-temp-file "org-books-test" nil ".org" (f-read-text pre-file 'utf-8))))
+    (with-current-buffer (find-file-noselect org-books-file)
+      (org-books--insert-at-pos (point-max) "Book Title" "Book Author" '(("ADDED" . "[2020-05-10]"))))
+    (should (files-equal org-books-file post-file))
+    (f-delete org-books-file)))
