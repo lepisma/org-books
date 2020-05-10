@@ -1,13 +1,15 @@
 #+TITLE: org-books
 #+AUTHOR: Abhinav Tushar
 
-[[https://travis-ci.org/lepisma/org-books][https://img.shields.io/travis/lepisma/org-books/master.svg?style=flat-square]]
+[[https://travis-ci.org/lepisma/org-books][https://img.shields.io/travis/lepisma/org-books/master.svg]] [[https://melpa.org/#/org-books][file:https://melpa.org/packages/org-books-badge.svg]] [[https://stable.melpa.org/#/org-books][file:https://stable.melpa.org/packages/org-books-badge.svg]]
 
 Reading list management using org-mode. A sample list lives on my wiki [[https://lepisma.xyz/wiki/readings/reading-list][here]].
 
 [[file:./screen.gif]]
 
 ** Quickstart
+
+~org-books~ is available on melpa.
 
 #+BEGIN_SRC emacs-lisp
 ;; Set path to the reading list org file
