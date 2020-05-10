@@ -85,7 +85,7 @@
 
 PATTERN-ALIST maps `url-type' symbol to regex pattern. See
 ORG-BOOKS-URL-PATTERNS for example."
-  (unless (null pattern-alist)
+  (when pattern-alist
     (let ((pattern (cdr (car pattern-alist))))
       (if (s-matches? pattern (url-host (url-generic-parse-url url)))
           (caar pattern-alist)
