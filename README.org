@@ -8,7 +8,6 @@ Reading list management using org-mode. A sample list lives on my wiki [[https:/
 [[file:./screen.gif]]
 
 ** Quickstart
-
 ~org-books~ is available on melpa.
 
 #+BEGIN_SRC emacs-lisp
@@ -30,7 +29,6 @@ Reading list management using org-mode. A sample list lives on my wiki [[https:/
   bottom under the selected heading.
 
 ** Adding new source
-
 A /source/ for books provide a /details function/ that takes certain input (like a
 url in case of amazon) and returns a list of ~title~, ~author~ and ~props~. ~props~ is
 an alist which gets added to the entry as org properties. Here is the output
@@ -43,9 +41,9 @@ from amazon's:
 #+RESULTS:
 : ("Algebra: Chapter 0 (Graduate Studies in Mathematics)" "Paolo Aluffi" (("AMAZON" . "https://www.amazon.in/Algebra-Chapter-Graduate-Studies-Mathematics/dp/0821847813/")))
 
-With the details function defined, write something to make a user facing
-interface which, after getting the details, calls ~org-book-add-book~ function.
-For an example, see the function ~org-books-add-url~.
+With the details function defined, you need to write the url pattern it accepts
+and add it to the variable =org-books-url-pattern-dispatches=. Check variable's
+docstring for more details.
 
 As of now there are the following sources:
 
