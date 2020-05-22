@@ -61,12 +61,14 @@
   :type 'integer
   :group 'org-books)
 
-(defcustom org-books-url-patterns
-  '((amazon . "^\\(www\\.\\)?amazon\\.")
-    (goodreads . "^\\(www\\.\\)?goodreads\\.com")
-    (isbn . "openlibrary\\.org"))
-  "Patterns for detecting url types."
-  :type '(alist :key-type symbol :value-type string)
+(defcustom org-books-url-pattern-dispatches
+  '(("^\\(www\\.\\)?amazon\\." . org-books-get-details-amazon)
+    ("^\\(www\\.\\)?goodreads\\.com" . org-books-get-details-goodreads)
+    ("openlibrary\\.org" . org-books-get-details-isbn))
+  "Pairs of url patterns and functions taking url and returning
+book details. Check documentation of `org-books-get-details' for
+return structure from these functions."
+  :type '(alist :key-type string :value-type symbol)
   :group 'org-books)
 
 (defun org-books--get-json (url)
@@ -79,17 +81,6 @@
 (defun org-books--clean-str (text)
   "Clean TEXT to remove extra whitespaces."
   (s-trim (s-collapse-whitespace text)))
-
-(defun org-books-get-url-type (url pattern-alist)
-  "Return type of URL using PATTERN-ALIST.
-
-PATTERN-ALIST maps `url-type' symbol to regex pattern. See
-ORG-BOOKS-URL-PATTERNS for example."
-  (when pattern-alist
-    (let ((pattern (cdr (car pattern-alist))))
-      (if (s-matches? pattern (url-host (url-generic-parse-url url)))
-          (caar pattern-alist)
-        (org-books-get-url-type url (cdr pattern-alist))))))
 
 (defun org-books-get-details-amazon-authors (page-node)
   "Return author names for amazon PAGE-NODE.
@@ -130,15 +121,21 @@ PAGE-NODE is the return value of `enlive-fetch' on the page url."
          (author (gethash "name" (car (gethash "authors" data)))))
     (list title author `(("ISBN" . ,url)))))
 
-(defun org-books-get-details (url url-type)
-  "Fetch book details from given URL and its URL-TYPE.
+(defun org-books-get-details (url)
+  "Fetch book details from given URL.
 
 Return a list of three items: title (string), author (string) and
-an alist of properties to be applied to the org entry."
-  (cl-case url-type
-    (amazon (org-books-get-details-amazon url))
-    (goodreads (org-books-get-details-goodreads url))
-    (isbn (org-books-get-details-isbn url))))
+an alist of properties to be applied to the org entry. If the url
+is not supported, throw an error."
+  (let ((output 'no-match)
+        (url-host-string (url-host (url-generic-parse-url url))))
+    (cl-dolist (pattern-fn-pair org-books-url-pattern-dispatches)
+      (when (s-matches? (car pattern-fn-pair) url-host-string)
+        (setq output (funcall (cdr pattern-fn-pair) url))
+        (cl-return)))
+    (if (eq output 'no-match)
+        (error (format "Url %s not understood" url))
+      output)))
 
 (defun org-books-create-file (file-path)
   "Write initialization stuff in a new file at FILE-PATH."
@@ -195,13 +192,10 @@ from `org-map-entries'."
 (defun org-books-add-url (url)
   "Add book from web URL."
   (interactive "sUrl: ")
-  (let ((url-type (org-books-get-url-type url org-books-url-patterns)))
-    (if (null url-type)
-        (message "Url not recognized")
-      (let ((details (org-books-get-details url url-type)))
-        (if (null details)
-            (message "Error in fetching url. Please retry.")
-          (apply #'org-books-add-book details))))))
+  (let ((details (org-books-get-details url)))
+    (if (null details)
+        (message "Error in fetching url. Please retry.")
+      (apply #'org-books-add-book details))))
 
 ;;;###autoload
 (defun org-books-add-isbn (isbn)
