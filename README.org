@@ -76,3 +76,29 @@ Here we describe a few capture /templates/ that can be used:
                     (details (org-books-get-details url)))
                (when details (apply #'org-books-format 1 details)))")))
 #+END_SRC
+
+** Capturing reading logs
+While reading, I keep a timestamped log under the book connected via org capture
+template. Here is how it looks like:
+
+#+begin_src org
+    ,*** READING Book name
+    :PROPERTIES:
+    :AUTHOR:   Author
+    :ADDED:    [2020-03-29]
+    :AMAZON:   https://www.amazon.com/...
+    :END:
+
+    ,**** Log
+     + [2021-04-09 Fri 00:32] ...
+     + [2021-04-08 Thu 23:59] This book is very ...
+#+end_src
+
+Org capture template looks like the following, using the function
+~org-books-visit-book-log~ from this package:
+
+#+begin_src emacs-lisp
+  (setq org-capture-templates
+        '(("b" "Book log" item (function org-books-visit-book-log)
+             "- %U %?" :prepend t)))
+#+end_src

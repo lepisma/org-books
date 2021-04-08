@@ -181,6 +181,35 @@ from `org-map-entries'."
                                ignore-sym))
                            match scope skip)))))
 
+(defun org-books--get-active-books (&optional todo-keyword)
+  "Return books that are currently active. Each item returned is
+a pair of book name and position of the headline. Activity is
+assumed, by default, to be marked by READING TODO state."
+  (let ((active-todo-keyword "READING"))
+    (org-books-map-entries
+     (lambda ()
+       (cons
+        (substring-no-properties (org-get-heading) (+ 1 (length (or todo-keyword active-todo-keyword))))
+        (point)))
+     (format "TODO=\"%s\"" (or todo-keyword active-todo-keyword)))))
+
+(defun org-books-visit-book-log ()
+  "Ask to pick a book from currently active one and position
+cursor to add log entry."
+  (let ((active-books (org-books--get-active-books)))
+    (if (null active-books)
+        (message "No books active at the moment.")
+      (let ((picked-book
+             (helm :sources (helm-build-sync-source "Active books"
+                              :candidates active-books)
+                   :buffer "*helm active books*")))
+        (find-file org-books-file)
+        (goto-char picked-book)
+        (unless (re-search-forward "^*+ Log$" nil t)
+          (org-insert-heading-after-current)
+          (org-do-demote)
+          (insert "Log\n"))))))
+
 ;;;###autoload
 (defun org-books-cliplink ()
   "Clip link from clipboard."
