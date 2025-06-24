@@ -109,6 +109,13 @@ PAGE-NODE is the return value of `enlive-fetch' on the page url."
   "Make and return openlibrary url from ISBN."
   (concat "https://openlibrary.org/api/books?bibkeys=ISBN:" isbn "&jscmd=data&format=json"))
 
+(defun create-isbn-cover-image-url (isbn)
+  (format "https://covers.openlibrary.org/b/ISBN/%s-M.jpg" isbn))
+
+(defun org-books-create-isbn-content (isbn dataurl pageurl)
+  (format "#+BEGIN_aside\n#+ATTR_HTML: :loading lazy\n[[%s]]\n\n[[%s][Open Library]] \\\\\n[[%s][Open Library Data]]\n#+END_aside"
+          (create-isbn-cover-image-url isbn) pageurl dataurl))
+
 (defun org-books-get-details-isbn (url)
   "Get book details from openlibrary ISBN response from URL."
   (let* ((json-object-type 'hash-table)
@@ -118,8 +125,11 @@ PAGE-NODE is the return value of `enlive-fetch' on the page url."
          (isbn (car (hash-table-keys json)))
          (data (gethash isbn json))
          (title (gethash "title" data))
-         (author (gethash "name" (car (gethash "authors" data)))))
-    (list title author `(("ISBN" . ,url)))))
+         (author (gethash "name" (car (gethash "authors" data))))
+         (pageurl (gethash "url" data))
+         (rawisbn (substring isbn 5))  )
+    (list title author `(("ISBN" . ,rawisbn))
+          (org-books-create-isbn-content rawisbn url pageurl))))
 
 (defun org-books-get-details (url)
   "Fetch book details from given URL.
@@ -150,7 +160,7 @@ is not supported, throw an error."
 (defun org-books-all-authors ()
   "Return a list of authors in the `org-books-file'."
   (with-current-buffer (find-file-noselect org-books-file)
-    (->> (org-property-values "AUTHOR")
+    (->> (org-property-values "Author")
        (-reduce-from (lambda (acc line) (append acc (s-split "," line))) nil)
        (mapcar #'s-trim)
        (-distinct)
@@ -158,7 +168,7 @@ is not supported, throw an error."
 
 (defun org-books-entry-p ()
   "Tell if current entry is an org-books entry."
-  (if (org-entry-get nil "AUTHOR") t))
+  (if (org-entry-get nil "Author") t))
 
 (defun org-books-get-closed-time ()
   "Return closed time of the current entry."
@@ -236,33 +246,35 @@ cursor to add log entry."
   "Return details as an org headline entry.
 
 LEVEL specifies the headline level. TITLE goes as the main text.
-AUTHOR and properties from PROPS go as org-property."
+AUTHOR and properties from PROPS go as org-property.  CONTENT is
+the actual content"
   (with-temp-buffer
     (org-mode)
     (insert (make-string level ?*) " " title "\n")
-    (org-set-property "AUTHOR" author)
-    (org-set-property "ADDED" (format-time-string "[%Y-%02m-%02d]"))
+    (org-set-property "Author" author)
+    (org-set-property "Added" (format-time-string "%Y-%02m-%02d"))
     (dolist (prop props)
       (org-set-property (car prop) (cdr prop)))
     (buffer-substring-no-properties (point-min) (point-max))))
 
-(defun org-books--insert (level title author &optional props)
+(defun org-books--insert (level title author &optional props content)
   "Insert book template at current position in buffer.
 
-Formatting is specified by LEVEL, TITLE, AUTHOR and PROPS as
+Formatting is specified by LEVEL, TITLE, AUTHOR, PROPS and CONTENT as
 described in docstring of `org-books-format' function."
-  (insert (org-books-format level title author props)))
+  (insert (org-books-format level title author props))
+  (insert "\n" content "\n"))
 
-(defun org-books--insert-at-pos (pos title author &optional props)
+(defun org-books--insert-at-pos (pos title author &optional props content)
   "Goto POS in current buffer, insert a new entry and save buffer.
 
-TITLE, AUTHOR and PROPS are formatted using `org-books-format'."
+TITLE, AUTHOR, PROPS AND CONTENT are formatted using `org-books-format'."
   (org-content)
   (goto-char pos)
   (let ((level (or (org-current-level) 0)))
     (org-books-goto-place)
     (insert "\n")
-    (org-books--insert (+ level 1) title author props)
+    (org-books--insert (+ level 1) title author props content)
     (save-buffer)))
 
 (defun org-books-goto-place ()
@@ -287,10 +299,10 @@ specifying the position in the file."
             (helm-org--get-candidates-in-file org-books-file helm-org-headings-fontify t nil t))))
 
 ;;;###autoload
-(defun org-books-add-book (title author &optional props)
+(defun org-books-add-book (title author &optional props content)
   "Add a book (specified by TITLE and AUTHOR) to the `org-books-file'.
 
-Optionally apply PROPS."
+Optionally apply PROPS and add CONTENT"
   (interactive
    (let ((completion-ignore-case t))
      (list
@@ -303,10 +315,10 @@ Optionally apply PROPS."
             (if headers
                 (helm :sources (helm-build-sync-source "org-book categories"
                                  :candidates (mapcar (lambda (h) (cons (car h) (marker-position (cdr h)))) headers)
-                                 :action (lambda (pos) (org-books--insert-at-pos pos title author props)))
+                                 :action (lambda (pos) (org-books--insert-at-pos pos title author props content)))
                       :buffer "*helm org-books add*")
               (goto-char (point-max))
-              (org-books--insert 1 title author props)
+              (org-books--insert 1 title author props content)
               (save-buffer)))))
     (message "org-books-file not set")))
 
@@ -315,7 +327,7 @@ Optionally apply PROPS."
   "Apply RATING to book at current point."
   (interactive "nRating (stars 1-5): ")
   (if (> rating 0)
-      (org-set-property "RATING" (s-repeat rating ":star:"))))
+      (org-set-property "Rating" (s-repeat rating ":star:"))))
 
 (provide 'org-books)
 ;;; org-books.el ends here
