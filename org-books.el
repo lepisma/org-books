@@ -98,10 +98,10 @@ PAGE-NODE is the return value of `enlive-fetch' on the page url."
         (list title author `(("AMAZON" . ,url))))))
 
 (defun org-books-get-details-goodreads (url)
-  "Get book details from goodreads URL."
+  "Get book details from Goodreads URL."
   (let* ((page-node (enlive-fetch url))
-         (title (org-books--clean-str (enlive-text (enlive-get-element-by-id page-node "bookTitle"))))
-         (author (org-books--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.authorName > span]))))))
+         (title (org-books--clean-str (enlive-text (enlive-query page-node [.Text__title1]))))
+         (author (org-books--clean-str (s-join ", " (mapcar #'enlive-text (enlive-query-all page-node [.ContributorLink__name] ))))))
     (if (not (string-equal title ""))
         (list title author `(("GOODREADS" . ,url))))))
 

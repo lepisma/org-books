@@ -12,7 +12,7 @@
 (ert-deftest test-goodreads ()
   (let* ((url "https://www.goodreads.com/book/show/23754.Preludes_Nocturnes")
          (res (org-books-get-details url)))
-    (should (string-equal (first res) "Preludes & Nocturnes"))
+    (should (string-equal (first res) "The Sandman, Vol. 1: Preludes & Nocturnes"))
     (should (string-equal (second res) "Neil Gaiman, Sam Kieth, Mike Dringenberg, Malcolm Jones III, Todd Klein, Karen Berger"))))
 
 (ert-deftest test-amazon ()
