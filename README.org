@@ -1,3 +1,7 @@
+#+begin_quote
+Development for this project has moved to sourcehut [[https://git.sr.ht/~lepisma/org-books][here]]. This repository is now in a read-only state.
+#+end_quote
+
 #+TITLE: org-books
 #+AUTHOR: Abhinav Tushar
 
